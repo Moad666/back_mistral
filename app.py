@@ -17,6 +17,9 @@ import spacy
 
 #library is used for numerical computations
 import numpy as np
+#used for working with regular expressions
+import re
+
 
 
 app = Flask(__name__)
@@ -31,10 +34,12 @@ def transform_text(input_text):
     # Replace '\' with a space
     transformed_text = transformed_text.replace('\\', '')
     # Replace '  ' with a single space
-    transformed_text = ' '.join(transformed_text.split())
+    #transformed_text = ' '.join(transformed_text.split())
     # Split the text into words, remove any empty strings, and join them back together
-    transformed_text = ' '.join(filter(None, transformed_text.split()))
-
+    #transformed_text = ' '.join(filter(None, transformed_text.split()))
+    
+    # Use regular expression to replace any occurrences of words with spaces with a single word
+    transformed_text = re.sub(r'([A-Za-z]+)\s([A-Za-z]+)', r'\1\2', transformed_text)
     return transformed_text
 
 @app.route('/generate', methods=['POST'])
@@ -63,6 +68,7 @@ def generate_text():
                 response_data = json.loads(line)
                 combined_response += response_data['response'] + ' '
         transformed_response = transform_text(combined_response)
+        print('after transformed : ' + transformed_response)
         return jsonify({'response': transformed_response.strip()}), 200
 
     except Exception as e:
@@ -133,23 +139,15 @@ def analyze_context():
         if not text1 or not text2:
             return jsonify({'error': 'Missing text1 or text2 in the request body'}), 400
 
-        # Print the input text for debugging purposes
-        print("Text 1:", text1)
-        print("Text 2:", text2)
-
         # Compute document embeddings
         doc1_embedding = model.encode(text1, convert_to_tensor=True)
         doc2_embedding = model.encode(text2, convert_to_tensor=True)
-
-        # Ensure that the embeddings have the correct dimensions
-        print("Dimension of embedding for text1:", doc1_embedding.shape)
-        print("Dimension of embedding for text2:", doc2_embedding.shape)
 
         # Compute cosine similarity between embeddings
         similarity_score = calculate_similarity(doc1_embedding, doc2_embedding)
 
         # Define a threshold for similarity
-        similarity_threshold = 0.85
+        similarity_threshold = 0.8
 
         if similarity_score >= similarity_threshold:
             similarity_response = "The texts are similar."
