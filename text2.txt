@@ -1,0 +1,1 @@
+Flask is a popular Python web framework known for its simplicity and flexibility. It's great for building web applications, APIs, and more. Flask provides tools and libraries for tasks such as routing, handling HTTP requests, and rendering templates. Its lightweight nature makes it easy to learn and suitable for both small and large projects.
